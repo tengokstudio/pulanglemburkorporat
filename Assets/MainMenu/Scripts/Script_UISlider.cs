@@ -9,7 +9,7 @@ public class Script_UISlider : MonoBehaviour
 
     [Header("Titik Koordinat (Sumbu X)")]
     // Posisi 0 = Tampilan awal (Main Menu di tengah, Credits tersembunyi di kanan)
-    public float mainMenuPosX = 0f;
+    public float mainMenuPosX = -109f;
 
     // Posisi -1920 = Panel bergeser ke KIRI (Main Menu keluar ke kiri, Credits masuk dari kanan)
     public float creditPosX = -2060f;

@@ -1662,13 +1662,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa48ad16762d5c46b24a494d5d73d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
-  GameMenu: MainMenu
+  GameMenu: SampleScene
   MainMenu_UI: {fileID: 1774404824}
   Logo: {fileID: 1881250699}
   Tutorial_UI: {fileID: 201717596}
   Credits_UI: {fileID: 2129331050}
   Tutor1: {fileID: 28500977}
   Tutor2: {fileID: 2050034204}
+  Circle: {fileID: 1383989320}
+  animTransisi: {fileID: 1383989325}
+  durasiTransisi: 0.7
 --- !u!114 &884818457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1682,7 +1685,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Script_UISlider
   widePanel: {fileID: 1882315461}
-  mainMenuPosX: 0
+  mainMenuPosX: -109
   creditPosX: -2060
   tutorialPosX: 1920
   slideSpeed: 8
@@ -1943,14 +1946,14 @@ GameObject:
   - component: {fileID: 1383989321}
   - component: {fileID: 1383989324}
   - component: {fileID: 1383989323}
-  - component: {fileID: 1383989322}
+  - component: {fileID: 1383989325}
   m_Layer: 5
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1383989321
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1970,28 +1973,6 @@ RectTransform:
   m_AnchoredPosition: {x: -82.5, y: -179.7}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!95 &1383989322
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383989320}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1a33728b91a4f714ebdde7f17fc7f235, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1383989323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2030,6 +2011,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1383989320}
   m_CullTransparentMesh: 1
+--- !u!95 &1383989325
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383989320}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1a33728b91a4f714ebdde7f17fc7f235, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1624793660
 GameObject:
   m_ObjectHideFlags: 0

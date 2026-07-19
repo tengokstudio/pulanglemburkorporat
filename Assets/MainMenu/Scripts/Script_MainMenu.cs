@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -14,19 +15,58 @@ public class Script_MainMenu : MonoBehaviour
     public GameObject Tutor1;
     public GameObject Tutor2;
 
-    bool Check_Tutor = false;
+    [Header("Referensi Objek")]
+    public GameObject Circle; // Pastikan ini sudah di-drag di Inspector
 
+    [Header("Pengaturan Animasi Transisi")]
+    public Animator animTransisi;
+    public float durasiTransisi = 1f;
+
+    bool Check_Tutor = false;
 
     private void Awake()
     {
         if (instance == null) instance = this;
     }
-    public void Play()
+
+    // Fungsi Start akan berjalan otomatis saat game dimulai
+    private void Start()
     {
-        SceneManager.LoadScene(GameMenu);
-        print("PLAYER TERDETEKSI KE GAME");
+        // Memastikan Circle tidak terlihat saat game pertama kali running
+        if (Circle != null)
+        {
+            Circle.SetActive(false);
+        }
     }
 
+    public void Play()
+    {
+        // 1. Munculkan Circle-nya terlebih dahulu
+        if (Circle != null)
+        {
+            Circle.SetActive(true);
+        }
+
+        // 2. Baru jalankan animasinya
+        if (animTransisi != null)
+        {
+            animTransisi.SetTrigger("MulaiTransisi");
+            StartCoroutine(ProsesPindahScene());
+        }
+        else
+        {
+            Debug.LogWarning("Animator transisi belum dimasukkan ke script!");
+            SceneManager.LoadScene(GameMenu);
+        }
+    }
+
+    private IEnumerator ProsesPindahScene()
+    {
+        yield return new WaitForSeconds(durasiTransisi);
+        SceneManager.LoadScene(GameMenu);
+    }
+
+    // ... (Fungsi Tutorial, Credits, Home, btn_tutorial tetap sama) ...
     public void Tutorial()
     {
         Script_UISlider.instance.SlideToTutorial();
