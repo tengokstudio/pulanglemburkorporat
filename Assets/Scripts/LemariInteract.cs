@@ -3,7 +3,11 @@ using UnityEngine;
 public class LemariInteract : MonoBehaviour
 {
     [Header("UI Reference")]
-    public GameObject interactUI; 
+    public GameObject interactUI;
+    public Transform playerTransform; // Masukkan objek Player ke sini
+    
+    [Header("Pengaturan Posisi UI")]
+    public Vector3 offset = new Vector3(0f, 2f, 0f);
 
     private bool isPlayerNear = false;
 
@@ -17,7 +21,10 @@ public class LemariInteract : MonoBehaviour
 
     void Update()
     {
-        
+        if (isPlayerNear)
+        {
+            interactUI.transform.position = playerTransform.position + offset;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
