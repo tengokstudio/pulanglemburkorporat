@@ -10,10 +10,18 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator; // optional, aman kalau null
 
+    [Header("Level Bounds (biar ga bisa jalan keluar map)")]
+    [Tooltip("Drag renderer ground di sini — batas diambil otomatis dari lebar objek ini. Kosongin buat pakai levelMinX/levelMaxX manual.")]
+    [SerializeField] private Renderer groundRenderer;
+    [SerializeField] private float levelMinX = -49f;
+    [SerializeField] private float levelMaxX = 49f;
+
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
     private float moveInput;
     private bool isRunning;
     private bool isHiding;
+    private KeyCode lastDirectionKey = KeyCode.D;
 
     public bool IsHiding => isHiding;
     public bool FacingRight { get; private set; } = true;
@@ -21,6 +29,13 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (groundRenderer != null)
+        {
+            levelMinX = groundRenderer.bounds.min.x;
+            levelMaxX = groundRenderer.bounds.max.x;
+        }
     }
 
     private void Update()
@@ -34,12 +49,20 @@ public class PlayerController : MonoBehaviour
         {
             moveInput = 0f;
             UpdateAnimator(0f);
+            AudioManager.Instance?.SetFootstepLooping(false, false);
             return;
         }
 
-        moveInput = 0f;
-        if (Input.GetKey(KeyCode.A)) moveInput -= 1f;
-        if (Input.GetKey(KeyCode.D)) moveInput += 1f;
+        if (Input.GetKeyDown(KeyCode.A)) lastDirectionKey = KeyCode.A;
+        if (Input.GetKeyDown(KeyCode.D)) lastDirectionKey = KeyCode.D;
+
+        bool aHeld = Input.GetKey(KeyCode.A);
+        bool dHeld = Input.GetKey(KeyCode.D);
+
+        if (aHeld && dHeld) moveInput = lastDirectionKey == KeyCode.A ? -1f : 1f;
+        else if (aHeld) moveInput = -1f;
+        else if (dHeld) moveInput = 1f;
+        else moveInput = 0f;
 
         isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
@@ -47,14 +70,27 @@ public class PlayerController : MonoBehaviour
         else if (moveInput < 0 && FacingRight) Flip();
 
         UpdateAnimator(Mathf.Abs(moveInput));
+        AudioManager.Instance?.SetFootstepLooping(Mathf.Abs(moveInput) > 0.01f, isRunning);
     }
 
     private void FixedUpdate()
     {
         if (isHiding) return;
 
+        // Kalau posisi udah lewat batas (misal dari teleport/dorongan lain), tarik balik dulu.
+        if (rb.position.x < levelMinX || rb.position.x > levelMaxX)
+        {
+            rb.position = new Vector2(Mathf.Clamp(rb.position.x, levelMinX, levelMaxX), rb.position.y);
+        }
+
         float speed = isRunning ? runSpeed : walkSpeed;
-        rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
+        float vx = moveInput * speed;
+
+        // Cegah gerak nambah keluar batas kalau udah nempel di ujung; arah sebaliknya tetep boleh.
+        if (rb.position.x <= levelMinX && vx < 0f) vx = 0f;
+        if (rb.position.x >= levelMaxX && vx > 0f) vx = 0f;
+
+        rb.linearVelocity = new Vector2(vx, rb.linearVelocity.y);
     }
 
     private void UpdateAnimator(float inputMagnitude)
@@ -94,6 +130,8 @@ public class PlayerController : MonoBehaviour
         if (currentHidingSpot != null)
         {
             SetHiding(!isHiding);
+            if (isHiding) AudioManager.Instance?.PlayLockerOpen();
+            else AudioManager.Instance?.PlayLockerClose();
             Debug.Log(isHiding ? "Mulai sembunyi" : "Keluar dari sembunyi");
         }
     }
@@ -116,6 +154,8 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsRunning", false);
         }
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = !value; // hilang pas ngumpet, muncul lagi pas keluar
     }
 
     /// <summary>Dipanggil FloorManager buat teleport player ke spawn point tiap floor mulai.

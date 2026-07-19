@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 
 public class FloorManager : MonoBehaviour
@@ -15,16 +16,23 @@ public class FloorManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform spawnPoint; // posisi lift ujung kiri
     [SerializeField] private PlayerController player; // drag manual di Inspector
+    [Tooltip("Trigger exit kedua, posisinya disesuaiin ke pintu kaca di background lantai terakhir. Cuma aktif pas CurrentFloor == finalFloor.")]
+    [SerializeField] private GameObject finalFloorExitZone;
+
+    [Header("Debug Testing (matiin kalau udah gak dipake)")]
+    [Tooltip("Mulai langsung di lantai terakhir (finalFloor), skip main dari lantai 9.")]
+    [SerializeField] private bool debugStartAtFinalFloor = false;
 
     public int CurrentFloor { get; private set; }
+    public int FinalFloor => finalFloor;
     public bool CurrentFloorHasAnomaly => currentFloorHasAnomaly;
 
     public event Action<int> OnFloorChanged;
-    public event Action OnPlayerCaught;
     public event Action OnGameWon;
 
     private bool hasLeftSpawnZone;
     private bool hasWon;
+    private bool hasBegunOnce; // biar fade transition di-skip pas load awal scene (nanti transisi masuknya ditangani main menu)
 
     private void Awake()
     {
@@ -34,6 +42,9 @@ public class FloorManager : MonoBehaviour
             return;
         }
         Instance = this;
+        CurrentFloor = debugStartAtFinalFloor ? finalFloor : startingFloor; // di-set di Awake, bukan Start — Unity ga jamin urutan Start() antar script,
+                                       // jadi script lain (misal FloorNumberDisplay) yang baca CurrentFloor pas Start()
+                                       // bisa kejalan duluan dan kebaca default 0 kalau ini nunggu Start().
 
         // Fail fast: kalau reference lupa di-assign di Inspector, ketauan
         // langsung di Console pas Play, bukan diem-diem null pas runtime.
@@ -45,7 +56,6 @@ public class FloorManager : MonoBehaviour
 
     private void Start()
     {
-        CurrentFloor = startingFloor;
         StartCoroutine(BeginFloorNextFrame());
     }
 
@@ -57,12 +67,33 @@ public class FloorManager : MonoBehaviour
 
     public void BeginFloor()
     {
+        bool skipTransition = !hasBegunOnce;
+        hasBegunOnce = true;
+
+        if (!skipTransition)
+            AudioManager.Instance?.PlayLiftSound();
+
+        if (!skipTransition && ScreenFader.Instance != null)
+        {
+            ScreenFader.Instance.PlayTransition(DoBeginFloor);
+        }
+        else
+        {
+            DoBeginFloor();
+        }
+    }
+
+    private void DoBeginFloor()
+    {
         hasLeftSpawnZone = false;
 
         if (spawnPoint != null && player != null)
         {
             player.TeleportTo(spawnPoint.position);
         }
+
+        if (finalFloorExitZone != null)
+            finalFloorExitZone.SetActive(CurrentFloor == finalFloor);
 
         OnFloorChanged?.Invoke(CurrentFloor);
         Debug.Log($"[Floor {CurrentFloor}] Mulai. HasAnomaly = {currentFloorHasAnomaly}");
@@ -82,6 +113,14 @@ public class FloorManager : MonoBehaviour
     {
         if (hasWon) return;
 
+        if (CurrentFloor == finalFloor)
+        {
+            // Lantai terakhir: pintu kaca di kanan = satu-satunya jalan keluar/menang,
+            // anomali "fixed" di lantai ini gak ngaruh ke arah yang bener.
+            AdvanceFloor();
+            return;
+        }
+
         if (currentFloorHasAnomaly)
         {
             WrongChoice("Maju padahal ada anomali");
@@ -97,6 +136,13 @@ public class FloorManager : MonoBehaviour
         if (hasWon) return;
         if (!hasLeftSpawnZone) return;
 
+        if (CurrentFloor == finalFloor)
+        {
+            // Lantai terakhir gak ada opsi mundur yang bener — harus lewat pintu kaca kanan.
+            WrongChoice("Mundur padahal lantai terakhir, harusnya lewat pintu keluar kanan");
+            return;
+        }
+
         if (currentFloorHasAnomaly)
         {
             AdvanceFloor();
@@ -110,13 +156,16 @@ public class FloorManager : MonoBehaviour
     private void AdvanceFloor()
     {
         Debug.Log($"Correct choice di floor {CurrentFloor} (HasAnomaly = {currentFloorHasAnomaly})");
+        AudioManager.Instance?.PlayCorrectChoice();
         CurrentFloor--;
 
         if (CurrentFloor < finalFloor)
         {
             hasWon = true;
             OnGameWon?.Invoke();
-            Debug.Log("MENANG! Player berhasil keluar dari looping room.");
+            AudioManager.Instance?.PlayWin();
+            Debug.Log("MENANG! Player berhasil keluar dari looping room. Reset scene (sementara, sampai ada win screen).");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             return;
         }
 
@@ -125,16 +174,20 @@ public class FloorManager : MonoBehaviour
     private void WrongChoice(string reason)
     {
         Debug.Log($"Wrong choice: {reason} -> reset ke floor {startingFloor}");
+        AudioManager.Instance?.PlayWrongChoice();
         CurrentFloor = startingFloor;
         BeginFloor();
     }
 
-    /// <summary>Dipanggil dari Anomaly AI kalau player ketangkep.</summary>
+    /// <summary>Dipanggil dari Anomaly AI kalau player ketangkep. Reset in-place ke lantai 9
+    /// (sementara pengganti "balik ke main menu" sesuai GDD, sampai menu-nya dibikin).</summary>
     public void PlayerCaught()
     {
-        if (hasWon) return; 
+        if (hasWon) return;
 
+        Debug.Log("[FloorManager] Player ketangkep! Reset ke lantai 9.");
+        AudioManager.Instance?.PlayCaught();
         CurrentFloor = startingFloor;
-        OnPlayerCaught?.Invoke();
+        BeginFloor();
     }
 }

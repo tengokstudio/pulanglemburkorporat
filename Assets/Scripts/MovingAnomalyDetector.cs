@@ -1,19 +1,47 @@
 using UnityEngine;
 
+// Trigger ngejar bukan lagi pas player fisik nabrak collider ini, tapi pas
+// sebagian besar area collider ini ("detector") udah masuk viewport kamera —
+// simulasi "player ngeliat anomali di layar".
 public class MovingAnomalyDetector : MonoBehaviour
 {
-    private MovingAnomaly parentAnomaly;
+    [Range(0f, 1f)]
+    [SerializeField] private float visibleFractionThreshold = 0.5f;
+
+    private MovingAnomalyBase parentAnomaly;
+    private Collider2D detectorCollider;
+    private Camera cam;
 
     private void Awake()
     {
-        parentAnomaly = GetComponentInParent<MovingAnomaly>();
+        parentAnomaly = GetComponentInParent<MovingAnomalyBase>();
         if (parentAnomaly == null)
-            Debug.LogError("[MovingAnomalyDetector] Ga nemu MovingAnomaly di parent!");
+            Debug.LogError("[MovingAnomalyDetector] Ga nemu MovingAnomalyBase di parent!");
+
+        detectorCollider = GetComponent<Collider2D>();
+        cam = Camera.main;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void Update()
     {
-        if (!other.CompareTag("Player")) return;
-        parentAnomaly?.StartChasing();
+        if (parentAnomaly == null || detectorCollider == null || cam == null) return;
+
+        if (GetVisibleFraction() >= visibleFractionThreshold)
+            parentAnomaly.StartChasing();
+    }
+
+    private float GetVisibleFraction()
+    {
+        Bounds bounds = detectorCollider.bounds;
+        Vector3 viewMin = cam.WorldToViewportPoint(bounds.min);
+        Vector3 viewMax = cam.WorldToViewportPoint(bounds.max);
+
+        float left = Mathf.Min(viewMin.x, viewMax.x);
+        float right = Mathf.Max(viewMin.x, viewMax.x);
+        float totalWidth = right - left;
+        if (totalWidth <= 0f) return 0f;
+
+        float visibleWidth = Mathf.Clamp01(right) - Mathf.Clamp01(left);
+        return Mathf.Max(0f, visibleWidth) / totalWidth;
     }
 }
