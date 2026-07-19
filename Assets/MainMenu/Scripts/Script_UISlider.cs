@@ -12,7 +12,7 @@ public class Script_UISlider : MonoBehaviour
     public float mainMenuPosX = 0f;
 
     // Posisi -1920 = Panel bergeser ke KIRI (Main Menu keluar ke kiri, Credits masuk dari kanan)
-    public float creditPosX = -1920f;
+    public float creditPosX = -2060f;
 
     public float tutorialPosX = 1920f;
 
