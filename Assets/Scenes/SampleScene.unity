@@ -293,6 +293,9 @@ MonoBehaviour:
   walkSpeed: 5
   runSpeed: 10
   animator: {fileID: 112343177}
+  groundRenderer: {fileID: 1546515828}
+  levelMinX: -49
+  levelMaxX: 49
 --- !u!95 &112343177
 Animator:
   serializedVersion: 7
@@ -1075,6 +1078,7 @@ GameObject:
   - component: {fileID: 1121807591}
   - component: {fileID: 1121807590}
   - component: {fileID: 1121807589}
+  - component: {fileID: 1121807593}
   m_Layer: 5
   m_Name: FadeCanvas
   m_TagString: Untagged
@@ -1165,6 +1169,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1121807593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121807588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 879e89bfd29383d4c8d0a9981c9264dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
+  fadeImage: {fileID: 1153239552}
+  fadeInTime: 0.25
+  fadeOutTime: 0.25
 --- !u!1 &1153239550
 GameObject:
   m_ObjectHideFlags: 0
@@ -1197,10 +1216,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1121807592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -910, y: -490}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1153239552
 MonoBehaviour:
@@ -1962,7 +1981,6 @@ MonoBehaviour:
   playerController: {fileID: 112343176}
   moveSpeed: 12
   catchDistance: 1
-  leftExitX: -50
   shakeAmount: 0.03
   shakeFrequency: 25
 --- !u!114 &3000000007
@@ -1980,7 +1998,6 @@ MonoBehaviour:
   playerController: {fileID: 112343176}
   moveSpeed: 9
   catchDistance: 1
-  leftExitX: -50
   hopHeight: 0.5
   hopFrequency: 6
   shakeDuration: 0.08
@@ -2190,13 +2207,14 @@ MonoBehaviour:
   fotokopiKebukaSprite: {fileID: -5423958993015578679, guid: dae4975b0ba1ff94a8e7b3c32df05a14, type: 3}
   fotokopiGerakBackgroundSprite: {fileID: 3340320127041807795, guid: c4f6cb429a86378479738876c3c0db66, type: 3}
   dispenserGerakBackgroundSprite: {fileID: -2371731366717468761, guid: 5bd95fb9fc326174fbc6e797fd817e1a, type: 3}
+  finalFloorSprite: {fileID: 5225147830882505373, guid: c99ad4a95a99b2a4f80a4cff5be475e4, type: 3}
   movingMarkerFotokopi: {fileID: 1704782289}
   movingMarkerDispenser: {fileID: 730414878}
   anomalyChancePerFloor: []
   defaultAnomalyChance: 0.5
   movingAnomalyMinFloor: 2
   movingAnomalyMaxFloor: 5
-  debugForceFloor9Fotokopi: 1
+  debugForceFloor9Fotokopi: 0
   debugForceFloor9Dispenser: 0
 --- !u!61 &3000000017
 BoxCollider2D:

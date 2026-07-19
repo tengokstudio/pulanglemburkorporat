@@ -16,10 +16,6 @@ public abstract class MovingAnomalyBase : MonoBehaviour
     [SerializeField] protected float moveSpeed = 2f;
     [SerializeField] protected float catchDistance = 0.5f;
 
-    [Header("Retreat (pas player ngumpet)")]
-    [Tooltip("Anomali jalan terus ke kiri (ga peduli player lagi) sampai X ini, baru menghilang. Sesuaiin ke tepi kiri background di scene.")]
-    [SerializeField] protected float leftExitX = -50f;
-
     protected Vector3 startPosition;
     public AnomalyChaseState State { get; private set; } = AnomalyChaseState.Idle;
 
@@ -67,7 +63,7 @@ public abstract class MovingAnomalyBase : MonoBehaviour
             case AnomalyChaseState.Chasing:
                 if (playerController.IsHiding)
                 {
-                    // Player ngumpet -> anomali ga lagi ngejar player, cuma jalan terus ke kiri sampai hilang.
+                    // Player ngumpet -> anomali balik ke posisi awal, terus diam di situ.
                     State = AnomalyChaseState.Retreating;
                     return;
                 }
@@ -76,11 +72,11 @@ public abstract class MovingAnomalyBase : MonoBehaviour
                 return;
 
             case AnomalyChaseState.Retreating:
-                Vector3 leftTarget = new Vector3(leftExitX, transform.position.y, transform.position.z);
-                MoveTowardsTarget(leftTarget);
-                if (transform.position.x <= leftExitX + 0.05f)
+                MoveTowardsTarget(startPosition);
+                if (Vector3.Distance(transform.position, startPosition) < 0.05f)
                 {
-                    gameObject.SetActive(false); // menghilang; OnEnable bakal reset posisi & state kalau dipake lagi nanti
+                    transform.position = startPosition;
+                    State = AnomalyChaseState.Idle;
                 }
                 return;
         }

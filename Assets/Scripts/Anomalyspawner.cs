@@ -9,7 +9,8 @@ public enum AnomalyType
     StaticMeetingRoom,
     StaticFotokopiKebuka,
     MovingFotokopi,
-    MovingDispenser
+    MovingDispenser,
+    FinalFloor
 }
 
 public class AnomalySpawner : MonoBehaviour
@@ -26,6 +27,7 @@ public class AnomalySpawner : MonoBehaviour
     [SerializeField] private Sprite fotokopiKebukaSprite;
     [SerializeField] private Sprite fotokopiGerakBackgroundSprite;
     [SerializeField] private Sprite dispenserGerakBackgroundSprite;
+    [SerializeField] private Sprite finalFloorSprite;
 
     [Header("Moving Anomaly Entities (drag di sini)")]
     [SerializeField] private GameObject movingMarkerFotokopi;     // enable/disable
@@ -111,7 +113,10 @@ public class AnomalySpawner : MonoBehaviour
 
         if (floor == 1)
         {
-            return AnomalyType.None;
+            // Lantai terakhir: anomali "fixed" (bukan random), tapi arah bener buat menang
+            // tetep maju/kanan (lewat pintu kaca) — dihandle khusus di FloorManager, bukan lewat
+            // currentFloorHasAnomaly biasa.
+            return AnomalyType.FinalFloor;
         }
 
         bool inMovingRange = floor >= movingAnomalyMinFloor && floor <= movingAnomalyMaxFloor;
@@ -173,6 +178,7 @@ public class AnomalySpawner : MonoBehaviour
             case AnomalyType.StaticFotokopiKebuka: return fotokopiKebukaSprite;
             case AnomalyType.MovingFotokopi: return fotokopiGerakBackgroundSprite;
             case AnomalyType.MovingDispenser: return dispenserGerakBackgroundSprite;
+            case AnomalyType.FinalFloor: return finalFloorSprite;
             default: return normalSprite;
         }
     }

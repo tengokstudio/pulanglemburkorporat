@@ -10,6 +10,12 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator; // optional, aman kalau null
 
+    [Header("Level Bounds (biar ga bisa jalan keluar map)")]
+    [Tooltip("Drag renderer ground di sini — batas diambil otomatis dari lebar objek ini. Kosongin buat pakai levelMinX/levelMaxX manual.")]
+    [SerializeField] private Renderer groundRenderer;
+    [SerializeField] private float levelMinX = -49f;
+    [SerializeField] private float levelMaxX = 49f;
+
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private float moveInput;
@@ -24,6 +30,12 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (groundRenderer != null)
+        {
+            levelMinX = groundRenderer.bounds.min.x;
+            levelMaxX = groundRenderer.bounds.max.x;
+        }
     }
 
     private void Update()
@@ -63,8 +75,20 @@ public class PlayerController : MonoBehaviour
     {
         if (isHiding) return;
 
+        // Kalau posisi udah lewat batas (misal dari teleport/dorongan lain), tarik balik dulu.
+        if (rb.position.x < levelMinX || rb.position.x > levelMaxX)
+        {
+            rb.position = new Vector2(Mathf.Clamp(rb.position.x, levelMinX, levelMaxX), rb.position.y);
+        }
+
         float speed = isRunning ? runSpeed : walkSpeed;
-        rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
+        float vx = moveInput * speed;
+
+        // Cegah gerak nambah keluar batas kalau udah nempel di ujung; arah sebaliknya tetep boleh.
+        if (rb.position.x <= levelMinX && vx < 0f) vx = 0f;
+        if (rb.position.x >= levelMaxX && vx > 0f) vx = 0f;
+
+        rb.linearVelocity = new Vector2(vx, rb.linearVelocity.y);
     }
 
     private void UpdateAnimator(float inputMagnitude)

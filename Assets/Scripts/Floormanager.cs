@@ -24,6 +24,7 @@ public class FloorManager : MonoBehaviour
 
     private bool hasLeftSpawnZone;
     private bool hasWon;
+    private bool hasBegunOnce; // biar fade transition di-skip pas load awal scene (nanti transisi masuknya ditangani main menu)
 
     private void Awake()
     {
@@ -58,7 +59,10 @@ public class FloorManager : MonoBehaviour
 
     public void BeginFloor()
     {
-        if (ScreenFader.Instance != null)
+        bool skipTransition = !hasBegunOnce;
+        hasBegunOnce = true;
+
+        if (!skipTransition && ScreenFader.Instance != null)
         {
             ScreenFader.Instance.PlayTransition(DoBeginFloor);
         }
@@ -95,6 +99,14 @@ public class FloorManager : MonoBehaviour
     {
         if (hasWon) return;
 
+        if (CurrentFloor == finalFloor)
+        {
+            // Lantai terakhir: pintu kaca di kanan = satu-satunya jalan keluar/menang,
+            // anomali "fixed" di lantai ini gak ngaruh ke arah yang bener.
+            AdvanceFloor();
+            return;
+        }
+
         if (currentFloorHasAnomaly)
         {
             WrongChoice("Maju padahal ada anomali");
@@ -109,6 +121,13 @@ public class FloorManager : MonoBehaviour
     {
         if (hasWon) return;
         if (!hasLeftSpawnZone) return;
+
+        if (CurrentFloor == finalFloor)
+        {
+            // Lantai terakhir gak ada opsi mundur yang bener — harus lewat pintu kaca kanan.
+            WrongChoice("Mundur padahal lantai terakhir, harusnya lewat pintu keluar kanan");
+            return;
+        }
 
         if (currentFloorHasAnomaly)
         {
