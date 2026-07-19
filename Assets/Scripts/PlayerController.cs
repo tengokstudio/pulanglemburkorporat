@@ -11,9 +11,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator animator; // optional, aman kalau null
 
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
     private float moveInput;
     private bool isRunning;
     private bool isHiding;
+    private KeyCode lastDirectionKey = KeyCode.D;
 
     public bool IsHiding => isHiding;
     public bool FacingRight { get; private set; } = true;
@@ -21,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -37,9 +40,16 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        moveInput = 0f;
-        if (Input.GetKey(KeyCode.A)) moveInput -= 1f;
-        if (Input.GetKey(KeyCode.D)) moveInput += 1f;
+        if (Input.GetKeyDown(KeyCode.A)) lastDirectionKey = KeyCode.A;
+        if (Input.GetKeyDown(KeyCode.D)) lastDirectionKey = KeyCode.D;
+
+        bool aHeld = Input.GetKey(KeyCode.A);
+        bool dHeld = Input.GetKey(KeyCode.D);
+
+        if (aHeld && dHeld) moveInput = lastDirectionKey == KeyCode.A ? -1f : 1f;
+        else if (aHeld) moveInput = -1f;
+        else if (dHeld) moveInput = 1f;
+        else moveInput = 0f;
 
         isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
@@ -116,6 +126,8 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsRunning", false);
         }
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = !value; // hilang pas ngumpet, muncul lagi pas keluar
     }
 
     /// <summary>Dipanggil FloorManager buat teleport player ke spawn point tiap floor mulai.

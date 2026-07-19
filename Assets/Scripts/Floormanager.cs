@@ -20,7 +20,6 @@ public class FloorManager : MonoBehaviour
     public bool CurrentFloorHasAnomaly => currentFloorHasAnomaly;
 
     public event Action<int> OnFloorChanged;
-    public event Action OnPlayerCaught;
     public event Action OnGameWon;
 
     private bool hasLeftSpawnZone;
@@ -34,6 +33,9 @@ public class FloorManager : MonoBehaviour
             return;
         }
         Instance = this;
+        CurrentFloor = startingFloor; // di-set di Awake, bukan Start — Unity ga jamin urutan Start() antar script,
+                                       // jadi script lain (misal FloorNumberDisplay) yang baca CurrentFloor pas Start()
+                                       // bisa kejalan duluan dan kebaca default 0 kalau ini nunggu Start().
 
         // Fail fast: kalau reference lupa di-assign di Inspector, ketauan
         // langsung di Console pas Play, bukan diem-diem null pas runtime.
@@ -45,7 +47,6 @@ public class FloorManager : MonoBehaviour
 
     private void Start()
     {
-        CurrentFloor = startingFloor;
         StartCoroutine(BeginFloorNextFrame());
     }
 
@@ -56,6 +57,18 @@ public class FloorManager : MonoBehaviour
     }
 
     public void BeginFloor()
+    {
+        if (ScreenFader.Instance != null)
+        {
+            ScreenFader.Instance.PlayTransition(DoBeginFloor);
+        }
+        else
+        {
+            DoBeginFloor();
+        }
+    }
+
+    private void DoBeginFloor()
     {
         hasLeftSpawnZone = false;
 
@@ -129,12 +142,14 @@ public class FloorManager : MonoBehaviour
         BeginFloor();
     }
 
-    /// <summary>Dipanggil dari Anomaly AI kalau player ketangkep.</summary>
+    /// <summary>Dipanggil dari Anomaly AI kalau player ketangkep. Reset in-place ke lantai 9
+    /// (sementara pengganti "balik ke main menu" sesuai GDD, sampai menu-nya dibikin).</summary>
     public void PlayerCaught()
     {
-        if (hasWon) return; 
+        if (hasWon) return;
 
+        Debug.Log("[FloorManager] Player ketangkep! Reset ke lantai 9.");
         CurrentFloor = startingFloor;
-        OnPlayerCaught?.Invoke();
+        BeginFloor();
     }
 }
