@@ -27,7 +27,7 @@ public abstract class MovingAnomalyBase : MonoBehaviour
     protected virtual void OnEnable()
     {
         transform.position = startPosition;
-        State = AnomalyChaseState.Idle;
+        SetIdle();
         Physics2D.SyncTransforms(); // collider (termasuk Detector di child) langsung update, ga nunggu physics step berikutnya
     }
 
@@ -43,9 +43,18 @@ public abstract class MovingAnomalyBase : MonoBehaviour
     public void ResetToStart()
     {
         transform.position = startPosition;
-        State = AnomalyChaseState.Idle;
+        SetIdle();
         Physics2D.SyncTransforms(); // sama kayak di OnEnable — cegah Detector baca posisi collider yang lama
     }
+
+    private void SetIdle()
+    {
+        State = AnomalyChaseState.Idle;
+        OnBecameIdle();
+    }
+
+    /// <summary>Override di subclass buat matiin sound loop yang spesifik ke tipe anomali itu.</summary>
+    protected virtual void OnBecameIdle() { }
 
     private void Update()
     {
@@ -76,7 +85,7 @@ public abstract class MovingAnomalyBase : MonoBehaviour
                 if (Vector3.Distance(transform.position, startPosition) < 0.05f)
                 {
                     transform.position = startPosition;
-                    State = AnomalyChaseState.Idle;
+                    SetIdle();
                 }
                 return;
         }

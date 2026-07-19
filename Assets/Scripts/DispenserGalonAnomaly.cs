@@ -21,10 +21,11 @@ public class DispenserGalonAnomaly : MovingAnomalyBase
 
         float hop = Mathf.Abs(Mathf.Sin(Time.time * hopFrequency)) * hopHeight;
 
-        // Landing terdeteksi begitu hop turun balik nyentuh dasar -> shake kamera dikit.
+        // Landing terdeteksi begitu hop turun balik nyentuh dasar -> shake kamera + SFX "tak".
         if (previousHop > 0.01f && hop <= 0.01f)
         {
             CameraFollow.Instance?.Shake(shakeDuration, shakeMagnitude);
+            AudioManager.Instance?.PlayDispenserHop();
         }
         previousHop = hop;
 

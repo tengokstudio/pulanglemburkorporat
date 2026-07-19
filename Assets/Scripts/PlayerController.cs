@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
         {
             moveInput = 0f;
             UpdateAnimator(0f);
+            AudioManager.Instance?.SetFootstepLooping(false, false);
             return;
         }
 
@@ -69,6 +70,7 @@ public class PlayerController : MonoBehaviour
         else if (moveInput < 0 && FacingRight) Flip();
 
         UpdateAnimator(Mathf.Abs(moveInput));
+        AudioManager.Instance?.SetFootstepLooping(Mathf.Abs(moveInput) > 0.01f, isRunning);
     }
 
     private void FixedUpdate()
@@ -128,6 +130,8 @@ public class PlayerController : MonoBehaviour
         if (currentHidingSpot != null)
         {
             SetHiding(!isHiding);
+            if (isHiding) AudioManager.Instance?.PlayLockerOpen();
+            else AudioManager.Instance?.PlayLockerClose();
             Debug.Log(isHiding ? "Mulai sembunyi" : "Keluar dari sembunyi");
         }
     }
