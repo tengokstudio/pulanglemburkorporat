@@ -25,6 +25,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Interact();
+        }
+
         if (isHiding)
         {
             moveInput = 0f;
@@ -40,11 +45,6 @@ public class PlayerController : MonoBehaviour
 
         if (moveInput > 0 && !FacingRight) Flip();
         else if (moveInput < 0 && FacingRight) Flip();
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Interact();
-        }
 
         UpdateAnimator(Mathf.Abs(moveInput));
     }
@@ -74,10 +74,37 @@ public class PlayerController : MonoBehaviour
         transform.localScale = scale;
     }
 
+    private HidingSpot currentHidingSpot;
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        var spot = other.GetComponent<HidingSpot>();
+        if (spot != null) currentHidingSpot = spot;
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        var spot = other.GetComponent<HidingSpot>();
+        if (spot != null && spot == currentHidingSpot)
+            currentHidingSpot = null;
+    }
+
     private void Interact()
     {
-        // TODO: raycast/overlap check ke interactable terdekat (lemari, dll)
-        Debug.Log("Interact pressed");
+        if (currentHidingSpot != null)
+        {
+            SetHiding(!isHiding);
+            Debug.Log(isHiding ? "Mulai sembunyi" : "Keluar dari sembunyi");
+        }
+    }
+
+    public void TeleportTo(Vector3 position)
+    {
+        if (isHiding) SetHiding(false); // cegah stuck kalau direset sambil sembunyi
+        rb.position = position;
+        rb.linearVelocity = Vector2.zero;
+        moveInput = 0f;
+        Physics2D.SyncTransforms();
     }
 
     public void SetHiding(bool value)
@@ -96,11 +123,4 @@ public class PlayerController : MonoBehaviour
     /// collider langsung ke-update saat itu juga, ga nunggu FixedUpdate berikutnya.
     /// Ini fix dari bug sebelumnya: teleport mid-trigger-callback via transform.position
     /// bikin collider ForwardExitZone/BackwardExitZone berhenti fire event.</summary>
-    public void TeleportTo(Vector3 position)
-    {
-        rb.position = position;
-        rb.linearVelocity = Vector2.zero;
-        moveInput = 0f; // cegah residual input kebawa 1 frame abis teleport
-        Physics2D.SyncTransforms();
-    }
 }

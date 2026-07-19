@@ -51,13 +51,11 @@ public class FloorManager : MonoBehaviour
 
     private System.Collections.IEnumerator BeginFloorNextFrame()
     {
-        // Tunda 1 frame biar semua script lain (AnomalySpawner, dll) udah selesai
-        // subscribe ke event ini sebelum floor pertama ditembak.
         yield return null;
         BeginFloor();
     }
 
-    private void BeginFloor()
+    public void BeginFloor()
     {
         hasLeftSpawnZone = false;
 
@@ -124,7 +122,6 @@ public class FloorManager : MonoBehaviour
 
         BeginFloor();
     }
-
     private void WrongChoice(string reason)
     {
         Debug.Log($"Wrong choice: {reason} -> reset ke floor {startingFloor}");
@@ -135,21 +132,9 @@ public class FloorManager : MonoBehaviour
     /// <summary>Dipanggil dari Anomaly AI kalau player ketangkep.</summary>
     public void PlayerCaught()
     {
-        if (hasWon) return; // guard biar ga kepanggil dobel abis menang
+        if (hasWon) return; 
 
         CurrentFloor = startingFloor;
-        OnPlayerCaught?.Invoke(); // trigger circle wipe / UI dulu
-
-        // TIDAK manggil BeginFloor() di sini secara langsung — sengaja.
-        // Alasan: BeginFloor() teleport player & reset visual floor SEKARANG,
-        // padahal circle wipe animation (listener OnPlayerCaught) butuh waktu
-        // sebelum balik ke gameplay. Kalau BeginFloor() dipanggil di sini,
-        // player bakal keliatan teleport balik ke lift SEBELUM wipe animation selesai.
-        //
-        // Sebagai gantinya: script yang handle circle wipe (nanti, GameStateManager
-        // atau semacamnya) WAJIB manggil FloorManager.Instance.BeginFloor() setelah
-        // animasi wipe selesai. Kalau lupa dipasang, game bakal macet total di floor 9
-        // dengan HasAnomaly = false selamanya — jadi gampang ketauan pas testing,
-        // bukan silent bug.
+        OnPlayerCaught?.Invoke();
     }
 }
