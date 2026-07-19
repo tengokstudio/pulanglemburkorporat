@@ -11,6 +11,11 @@ public class Script_MainMenu : MonoBehaviour
     public GameObject Logo;
     public GameObject Tutorial_UI;
     public GameObject Credits_UI;
+    public GameObject Tutor1;
+    public GameObject Tutor2;
+
+    bool Check_Tutor = false;
+
 
     private void Awake()
     {
@@ -24,7 +29,28 @@ public class Script_MainMenu : MonoBehaviour
 
     public void Tutorial()
     {
-        MainMenu_UI.SetActive(false);
+        Script_UISlider.instance.SlideToTutorial();
+    }
 
+    public void Credits()
+    {
+        Script_UISlider.instance.SlideToCredits();
+    }
+
+    public void Home()
+    {
+        Script_UISlider.instance.SlideToMainMenu();
+        if (Check_Tutor == true)
+        {
+            Tutor1.SetActive(true);
+            Tutor2.SetActive(false);
+        }
+    }
+
+    public void btn_tutorial()
+    {
+        Check_Tutor = true;
+        Tutor1.SetActive(false);
+        Tutor2.SetActive(true);
     }
 }
